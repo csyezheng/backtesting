@@ -1,4 +1,6 @@
 import os
+import platform
+from datetime import datetime
 import yaml
 import akshare as ak
 
@@ -37,3 +39,25 @@ def index_stock_cons(index_code='000300'):
     df = ak.index_stock_cons(symbol=index_code)
     df.columns = ['stock_code', 'stock_name', 'lift_date']
     return dict(zip(df.stock_code, df.stock_name))
+
+
+def df_to_csv(df, directory, prefix):
+    if not os.path.exists(directory):
+        os.mkdir(directory)
+    file_name = prefix + datetime.now().strftime(' - %d-%H%M%S') + '.csv'
+    file_path = os.path.join(directory, file_name)
+    encoding = os_encoding()
+    df.to_csv(file_path, index=False, encoding=encoding)
+
+
+def os_encoding():
+    os_name = platform.system()
+    encoding = 'utf-8'
+    if os_name == 'Windows':
+        encoding = 'utf-8-sig'
+    return encoding
+
+
+def strategy_params_repr(strategy):
+    keys = strategy.params._getkeys()
+    return '_'.join([str(getattr(strategy.params, k)) for k in keys])

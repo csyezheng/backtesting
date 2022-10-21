@@ -11,6 +11,10 @@ class BaseStrategy(bt.Strategy):
         self.end_date = BaseStrategy.config.get('END_DATE')
 
     @classmethod
+    def optimize(cls):
+        pass
+
+    @classmethod
     def params_list(cls):
         pass
 

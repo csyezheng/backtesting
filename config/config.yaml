@@ -10,16 +10,31 @@ END_DATE: 2022-05-31
 
 CHEAT_ON_OPEN: True
 
+STRATEGIES: {
+  SMACrossStrategy: backtesting.strategy.sma_cross,
+  PriceSMACrossStrategy: backtesting.strategy.price_sma_cross,
+}
+
 SMA CROSS STRATEGY PARAMETERS: {
-    FAST_PERIOD: {
-        MINIMUN: 10,
-        MAXIMIUM: 20,
-        STEP: 5
-    },
-    SLOW_PERIOD: {
-        MINIMUN: 50,
-        MAXIMIUM: 200,
-        STEP: 50
-    }
+  OPTIMIZATION: True,
+  FAST_PERIOD: {
+    MINIMUN: 5,
+    MAXIMIUM: 20,
+    STEP: 5
+  },
+  SLOW_PERIOD: {
+    MINIMUN: 50,
+    MAXIMIUM: 200,
+    STEP: 50
+  }
+}
+
+PRICE SMA CROSS STRATEGY PARAMETERS: {
+  OPTIMIZATION: True,
+  PERIOD: {
+    MINIMUN: 10,
+    MAXIMIUM: 200,
+    STEP: 10
+  },
 }
 
