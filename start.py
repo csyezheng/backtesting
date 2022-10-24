@@ -21,31 +21,46 @@ def start():
     for strategy_cls_name, module in strategies.items():
         strategy_cls = getattr(importlib.import_module(module), strategy_cls_name)
         detail_report = backtest_symbols(strategy_cls)
+        if detail_report is None or detail_report.empty:
+            continue
         df = detail_report.groupby(by=['strategy', 'params'], axis=0).agg(
             {'won_total': 'sum', 'total_closed': 'sum', 'pnl_net_total': 'sum',
              'net_profit_percentage': 'mean', 'max_drawdown': 'max',
              'sharpe_ratio_a': 'mean'})
-        df['strike_rate'] = df['won_total'] / df['total_closed']
+        df['strike_rate'] = (df['won_total'].astype(float) / df['total_closed'].astype(float)).fillna(0)
         df['annualized_return_percentage'] = df['net_profit_percentage'] / days * 365
         summary_list.append(df)
-    summary_report = pd.concat(summary_list)
-    summary_report.reset_index(inplace=True)
-    report_dir = os.path.join(os.getcwd(), 'report')
-    df_to_csv(summary_report, report_dir, 'summary')
+    if summary_list:
+        summary_report = pd.concat(summary_list)
+        summary_report.reset_index(inplace=True)
+        report_dir = config.get('REPORT_DIR')
+        df_to_csv(summary_report, report_dir, 'summary')
 
 
 def backtest_symbols(strategy_cls):
     symbols = index_stock_cons('000300')
 
-    # workers = os.cpu_count()
-    with Pool(max_workers=6) as outer_pool:
+    workers = os.cpu_count()
+    with Pool(max_workers=workers) as outer_pool:
         engine = Engine(config, strategy_cls)
         results = outer_pool.map(engine, symbols.items())
-    record_list = [record for sublist in results for record in sublist]
+
+    record_list = []
+    try:
+        for sublist in results:
+            if sublist:
+                for record in sublist:
+                    record_list.append(record)
+    except Exception as e:
+        print(e)
+    if not record_list:
+        return None
+
     df = pd.DataFrame(record_list)
-    report_dir = os.path.join(os.getcwd(), 'report/strategy')
+    report_dir = config.get('REPORT_DIR')
+    strategy_dir = os.path.join(report_dir, 'strategy')
     prefix = strategy_cls.__name__
-    df_to_csv(df, report_dir, prefix)
+    df_to_csv(df, strategy_dir, prefix)
     return df
 
 

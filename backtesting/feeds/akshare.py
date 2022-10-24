@@ -57,8 +57,7 @@ class AkshareData(bt.feed.DataBase):
         return True
 
 
-def load_data_from_akshare(symbol):
-    data_dir = os.path.join(os.getcwd(), 'data')
+def load_data_from_akshare(data_dir, symbol):
     if not os.path.exists(data_dir):
         os.mkdir(data_dir)
     file_path = os.path.join(data_dir, symbol + '.csv')

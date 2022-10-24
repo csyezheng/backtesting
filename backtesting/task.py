@@ -11,8 +11,6 @@ from backtesting.utils import keys_exists, df_to_csv, strategy_params_repr
 from backtesting.metrics import DetailMetric
 from backtesting.sizer import AllInSizerInt
 
-CHART_DIR = os.path.join(os.getcwd(), 'chart')
-
 
 class Task:
 
@@ -20,6 +18,7 @@ class Task:
         self.config = config
         self.start_date = self.config.get('START_DATE')
         self.end_date = self.config.get('END_DATE')
+        self.data_dir = self.config.get('DATA_DIR')
 
         self.symbol = None
         self.name = None
@@ -29,6 +28,8 @@ class Task:
         self.params = strategy_cls.params_list()
 
         self.cheat_on_open = self.config.get('CHEAT_ON_OPEN')
+        self.trade_history = self.config.get('TRADE_HISTORY')
+        self.run_once = self.config.get('RUN_ONCE')
 
         self.cerebro = bt.Cerebro()
 
@@ -122,14 +123,15 @@ class Task:
         if hasattr(analyzers, 'tradelist'):
             trade_list = strategy.analyzers.tradelist.get_analysis()
             df = pd.DataFrame(trade_list)
-            report_dir = os.path.join(os.getcwd(), 'report/trade_list')
+            report_dir = self.config.get('REPORT_DIR')
+            trade_list_dir = os.path.join(report_dir, r'trade_list')
             prefix = ' '.join([
                 metrics.strategy,
                 metrics.params,
                 self.symbol,
                 'trade_list '
             ])
-            df_to_csv(df, report_dir, prefix)
+            df_to_csv(df, trade_list_dir, prefix)
 
         # Designate the rows
         h1 = ['Total Open', 'Total Closed', 'Total Won', 'Total Lost']
@@ -157,25 +159,24 @@ class Task:
         except Exception as e:
             pass
 
-        # plot
-        chart = False
-        if 'chart' in self.config and self.config['chart'] == 'true':
-            chart = True
-        if chart:
-            # fig = self.cerebro.plot()
+        if 'CHART' in self.config and self.config['CHART'] is True and not self.optimization:
+            figs = self.cerebro.plot(style='candlestick')
             plt.rcParams["figure.figsize"] = [16, 9]
-            if not os.path.exists(CHART_DIR):
-                os.mkdir(CHART_DIR)
-            plt.savefig(os.path.join(CHART_DIR, '{}.png'.format(metrics.symbol)))
+            chart_dir = os.path.join(self.config.get('REPORT_DIR'), 'chart')
+            if not os.path.exists(chart_dir):
+                os.mkdir(chart_dir)
+            for fig in figs:
+                fig.savefig(os.path.join(chart_dir, '{}.png'.format(metrics.strategy + ' ' + metrics.symbol)))
 
         return metrics
 
     def run(self, symbol, name):
         self.symbol = symbol
         self.name = name
-        data = load_data_from_akshare(symbol)
+        data = load_data_from_akshare(self.data_dir, symbol)
         self.cerebro.adddata(data, name=symbol)
-        strategies = self.cerebro.run(cheat_on_open=self.cheat_on_open, tradehistory=True, runonce=False)
+        strategies = self.cerebro.run(cheat_on_open=self.cheat_on_open, tradehistory=self.trade_history,
+                                      runonce=self.run_once)
         metrics_record = []
         if self.optimization:
             for strategy_group in strategies:

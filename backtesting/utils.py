@@ -43,7 +43,7 @@ def index_stock_cons(index_code='000300'):
 
 def df_to_csv(df, directory, prefix):
     if not os.path.exists(directory):
-        os.mkdir(directory)
+        os.makedirs(directory)
     file_name = prefix + datetime.now().strftime(' - %d-%H%M%S') + '.csv'
     file_path = os.path.join(directory, file_name)
     encoding = os_encoding()
