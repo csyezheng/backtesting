@@ -3,7 +3,7 @@
 
 import os
 import importlib
-from concurrent.futures import ProcessPoolExecutor as Pool
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 import pandas as pd
 from backtesting.task import Task
@@ -39,20 +39,23 @@ def start():
 
 def backtest_symbols(strategy_cls):
     symbols = index_stock_cons('000300')
-
-    workers = os.cpu_count()
-    with Pool(max_workers=workers) as outer_pool:
-        engine = Engine(config, strategy_cls)
-        results = outer_pool.map(engine, symbols.items())
+    # symbols = {'601318': '中国平安', '601336': '新华保险', '603283': '赛腾股份', '002557': '洽洽食品',
+    #            '002384': '东山精密', '000582': '海康威视'}
 
     record_list = []
-    try:
-        for sublist in results:
-            if sublist:
-                for record in sublist:
-                    record_list.append(record)
-    except Exception as e:
-        print(e)
+    workers = os.cpu_count()
+    with ProcessPoolExecutor(max_workers=workers) as executor:
+        engine = Engine(config, strategy_cls)
+        future_to_symbol = {executor.submit(engine, symbol, name): symbol for symbol, name in symbols.items()}
+        for future in as_completed(future_to_symbol):
+            symbol = future_to_symbol[future]
+            try:
+                res = future.result()
+                record_list.extend(res)
+            except Exception as exc:
+                print('%s generated an exception: %s' % (symbol, exc))
+            else:
+                print('%s have completed' % symbol)
     if not record_list:
         return None
 
@@ -69,8 +72,8 @@ class Engine(object):
     def __init__(self, conf, strategy_cls):
         self.task = Task(conf, strategy_cls)
 
-    def __call__(self, pairs):
-        metrics_record = self.task.run(pairs[0], pairs[1])
+    def __call__(self, symbol, name):
+        metrics_record = self.task.run(symbol, name)
         return metrics_record
 
 

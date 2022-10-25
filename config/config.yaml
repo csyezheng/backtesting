@@ -17,30 +17,29 @@ TRADE_HISTORY: True
 RUN_ONCE: True
 
 STRATEGIES: {
-  SMACrossStrategy: backtesting.strategy.sma_cross,
   PriceSMACrossStrategy: backtesting.strategy.price_sma_cross,
+  SMACrossStrategy: backtesting.strategy.sma_cross,
 }
 
 SMA CROSS STRATEGY PARAMETERS: {
   OPTIMIZATION: True,
-  FAST_PERIOD: {
-    MINIMUN: 5,
-    MAXIMIUM: 20,
-    STEP: 5
-  },
-  SLOW_PERIOD: {
-    MINIMUN: 50,
-    MAXIMIUM: 200,
-    STEP: 50
-  }
+  STEP: False,
+  #  FAST_PERIOD: {
+  #    MINIMUN: 5,
+  #    MAXIMIUM: 50,
+  #    STEP: 5
+  #  },
+  #  SLOW_PERIOD: {
+  #    MINIMUN: 50,
+  #    MAXIMIUM: 200,
+  #    STEP: 50
+  #  },
+  FAST_PERIOD: [ 5, 10, 20, 30, 50, 100, 200 ],
+  SLOW_PERIOD: [ 5, 10, 20, 30, 50, 100, 200 ],
 }
 
 PRICE SMA CROSS STRATEGY PARAMETERS: {
   OPTIMIZATION: True,
-  PERIOD: {
-    MINIMUN: 10,
-    MAXIMIUM: 200,
-    STEP: 10
-  },
+  PERIOD: [ 5, 10, 20, 30, 50, 60, 100, 120, 150, 200, 250 ],
 }
 

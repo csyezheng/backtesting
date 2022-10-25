@@ -11,6 +11,10 @@ class BaseStrategy(bt.Strategy):
         self.end_date = BaseStrategy.config.get('END_DATE')
 
     @classmethod
+    def run_once(cls):
+        pass
+
+    @classmethod
     def optimize(cls):
         pass
 
@@ -24,13 +28,13 @@ class BaseStrategy(bt.Strategy):
 
     def notify_order(self, order):
         dt = self.datas[0].datetime.datetime(0)
-        if order.status in [order.Margin]:
+        if order.status == order.Margin:
             if order.isbuy():
                 print(
                     '[%s] order was not executed, not enough cash. Price: %.2f, PNL: %.2f, Cash: %.2f' %
                     (dt, order.executed.price, order.executed.pnl, self.broker.getvalue()))
 
-        if order.status in [order.Completed]:
+        elif order.status == order.Completed:
             if order.isbuy():
                 print(
                     '[%s] BUY EXECUTED, Price: %.2f, PNL: %.2f, Cash: %.2f' %
@@ -38,15 +42,13 @@ class BaseStrategy(bt.Strategy):
             else:  # Sell
                 print('[%s] SELL EXECUTED, Price: %.2f, PNL: %.2f, Cash: %.2f' %
                       (dt, order.executed.price, order.executed.pnl, self.broker.getvalue()))
+        else:
+            print('order status: {}'.format(order.status))
 
     def operate(self, from_open):
         pass
 
     def next(self):
-        print('{} next, open {} close {}'.format(
-            self.data.datetime.date(),
-            self.data.open[0], self.data.close[0])
-        )
         if self.cheating:
             return
         self.operate(from_open=False)

@@ -15,23 +15,26 @@ class PriceSMACrossStrategy(BaseStrategy):
         self.crossover = bt.ind.CrossOver(self.data.close, self.sma)
 
     @classmethod
+    def run_once(cls):
+        return True
+
+    @classmethod
     def optimize(cls):
         return cls.config['PRICE SMA CROSS STRATEGY PARAMETERS']['OPTIMIZATION']
 
     @classmethod
     def params_list(cls):
         period = cls.config['PRICE SMA CROSS STRATEGY PARAMETERS']['PERIOD']
-        param = range(int(period['MINIMUN']), int(period['MAXIMIUM']) + 1, int(period['STEP']))
-        return {'period': param}
+        return {'period': period}
 
     def operate(self, from_open):
         if self.start_date <= self.data.datetime.date() <= self.end_date:
             if not self.position:  # not in the market
                 if self.crossover > 0:  # if fast crosses slow to the upside
-                    print(' {} submit Buy, from open {}, close {}'.format(
-                        self.data.datetime.date(),
-                        from_open, self.data.close[0])
-                    )
+                    # print(' {} submit Buy, from open {}, close {}'.format(
+                    #     self.data.datetime.date(),
+                    #     from_open, self.data.close[0])
+                    # )
                     order = self.buy()  # enter long
             elif self.crossover < 0:  # in the market & cross to the downside
                 self.close()  # close long position

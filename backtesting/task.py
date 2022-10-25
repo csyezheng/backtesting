@@ -26,10 +26,10 @@ class Task:
         self.strategy_name = self.strategy_cls.__name__
         self.optimization = strategy_cls.optimize()
         self.params = strategy_cls.params_list()
+        self.run_once = strategy_cls.run_once()
 
         self.cheat_on_open = self.config.get('CHEAT_ON_OPEN')
         self.trade_history = self.config.get('TRADE_HISTORY')
-        self.run_once = self.config.get('RUN_ONCE')
 
         self.cerebro = bt.Cerebro()
 

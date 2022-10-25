@@ -16,6 +16,10 @@ class SMACrossStrategy(BaseStrategy):
         self.crossover = bt.ind.CrossOver(self.sma_fast, self.sma_slow)
 
     @classmethod
+    def run_once(cls):
+        return False
+
+    @classmethod
     def optimize(cls):
         return cls.config['SMA CROSS STRATEGY PARAMETERS']['OPTIMIZATION']
 
@@ -23,9 +27,13 @@ class SMACrossStrategy(BaseStrategy):
     def params_list(cls):
         fast_period = cls.config['SMA CROSS STRATEGY PARAMETERS']['FAST_PERIOD']
         slow_period = cls.config['SMA CROSS STRATEGY PARAMETERS']['SLOW_PERIOD']
-        param1 = range(int(fast_period['MINIMUN']), int(fast_period['MAXIMIUM']) + 1, int(fast_period['STEP']))
-        param2 = range(int(slow_period['MINIMUN']), int(slow_period['MAXIMIUM']) + 1, int(slow_period['STEP']))
-        return {'fast_period': param1, 'slow_period': param2}
+        step = cls.config['SMA CROSS STRATEGY PARAMETERS']['STEP']
+        if step:
+            param1 = range(int(fast_period['MINIMUN']), int(fast_period['MAXIMIUM']) + 1, int(fast_period['STEP']))
+            param2 = range(int(slow_period['MINIMUN']), int(slow_period['MAXIMIUM']) + 1, int(slow_period['STEP']))
+            return {'fast_period': param1, 'slow_period': param2}
+        else:
+            return {'fast_period': fast_period, 'slow_period': slow_period}
 
     def operate(self, from_open):
         if self.start_date <= self.data.datetime.date() <= self.end_date:
