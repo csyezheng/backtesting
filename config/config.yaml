@@ -19,6 +19,7 @@ RUN_ONCE: True
 STRATEGIES: {
   PriceSMACrossStrategy: backtesting.strategy.price_sma_cross,
   SMACrossStrategy: backtesting.strategy.sma_cross,
+  ZigZagStrategy: backtesting.strategy.zigzag,
 }
 
 SMA CROSS STRATEGY PARAMETERS: {
@@ -43,3 +44,17 @@ PRICE SMA CROSS STRATEGY PARAMETERS: {
   PERIOD: [ 5, 10, 20, 30, 50, 60, 100, 120, 150, 200, 250 ],
 }
 
+ZIGZAG STRATEGY PARAMETERS: {
+  OPTIMIZATION: True,
+  DEV THRESHOLD: 5,
+  DEPTH: 10,
+  MODE: [
+    #      strict uptrend and downtrend,
+    #      strict uptrend,
+    #      not downtrend,
+    #      strict price with previous trough and trough,
+      above previous swing low and swing low,
+      above previous swing low,
+      above swing low,
+  ]
+}
